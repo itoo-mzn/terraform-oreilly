@@ -7,7 +7,7 @@ resource "aws_instance" "example" {
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
 
-  user_data = <<EOF
+  user_data = <<-EOF
               #!/bin/bash
               echo "Hello, World!" > index.html
               nohup busybox httpd -f -p ${var.server_port} &
@@ -51,6 +51,21 @@ resource "aws_security_group" "instance" {
 #   key_name   = var.key_name
 #   public_key = file("${var.key_name}.pub")
 # }
+
+output "instance_public_ip" {
+  value = aws_instance.example.public_ip
+}
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
 
 variable "server_port" {
   description = "The port the server will use for HTTP requests"
