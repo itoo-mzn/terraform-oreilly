@@ -1,7 +1,8 @@
 provider "aws" {
-  region = "ap-northeast-1"
+  region = "ap-northeast-1" # 東京リージョン
 }
 
+# EC2インスタンス
 resource "aws_instance" "example" {
   ami                    = "ami-0f415cc2783de6675"
   instance_type          = "t2.micro"
@@ -16,17 +17,16 @@ resource "aws_instance" "example" {
   # user_dataが変更された場合、インスタンスを再起動する
   user_data_replace_on_change = true
 
-  # key_name = aws_key_pair.this.key_name
-
   tags = {
     Name = "example"
   }
 }
 
+# セキュリティグループ EC2インスタンス用
 resource "aws_security_group" "instance" {
   name = "example-instance"
 
-  # 全IPからの8080ポートへのアクセスを許可
+  # 全IPからの8080ポートへのアクセスのみを許可
   ingress {
     from_port   = var.server_port
     to_port     = var.server_port
@@ -34,6 +34,7 @@ resource "aws_security_group" "instance" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # アウトバウンドは全許可
   egress {
     from_port   = 0
     to_port     = 0
@@ -42,16 +43,7 @@ resource "aws_security_group" "instance" {
   }
 }
 
-# SSHして調査したときの残骸
-# variable "key_name" {
-#   type    = string
-#   default = "ec2_key"
-# }
-# resource "aws_key_pair" "this" {
-#   key_name   = var.key_name
-#   public_key = file("${var.key_name}.pub")
-# }
-
+# output: apply後に表示する出力値
 output "instance_public_ip" {
   value = aws_instance.example.public_ip
 }
@@ -68,11 +60,7 @@ data "aws_subnets" "default" {
 }
 
 variable "server_port" {
-  description = "The port the server will use for HTTP requests"
+  description = "HTTPリクエストを受け付けるポート番号"
   type        = number
   default     = 8080
-}
-
-output "instance_public_ip" {
-  value = aws_instance.example.public_ip
 }
