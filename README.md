@@ -23,3 +23,18 @@ https://github.com/direnv/direnv?tab=readme-ov-file#basic-installation
 （構成図というワードから連想するものではない。）
 
 https://qiita.com/lilacs/items/fe8b3223f2a193c0fa2e
+
+# ステート管理
+
+`global/s3`内で作成したS3バケットで管理。
+（書籍内ではDynamoDBも使う構成だったが、Terraformの更新により不要になった。）
+
+## ステート管理開始手順
+### 管理コンポーネント（S3バケット）自体の管理
+1. `global/s3`内で terraform init, apply 実行し、S3バケットを作成。
+2. それらを`global/s3/main.tf`にてbackendに設定。
+3. `global/s3`内で terraform init, apply 実行。
+
+### 管理コンポーネント以外の管理
+1. `xxx/main.tf`にてbackendにステート管理用S3を設定。
+2. `xxx`内で terraform init, apply 実行。
