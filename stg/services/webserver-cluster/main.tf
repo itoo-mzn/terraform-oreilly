@@ -14,17 +14,6 @@ data "aws_subnets" "default" {
   }
 }
 
-variable "server_port" {
-  description = "HTTPリクエストを受け付けるポート番号"
-  type        = number
-  default     = 8080
-}
-
-output "alb_dns_name" {
-  value       = aws_lb.example.dns_name
-  description = "ロードバランサーのドメイン名"
-}
-
 # ALB
 resource "aws_lb" "example" {
   name               = "terraform-asg-example"
