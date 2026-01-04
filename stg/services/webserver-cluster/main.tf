@@ -25,6 +25,16 @@ data "aws_subnets" "default" {
   }
 }
 
+# stateファイルを読み取る
+# data "terraform_remote_state" "db" {
+#   backend = "s3"
+#   config = {
+#     bucket = "state-bucket-ito-20260104"
+#     key    = "data-stores/mysql/terraform.tfstate"
+#     region = "ap-northeast-1"
+#   }
+# }
+
 # ALB
 resource "aws_lb" "example" {
   name               = "terraform-asg-example"
@@ -138,12 +148,11 @@ resource "aws_launch_template" "example" {
   # ALB用セキュリティグループに所属させる
   vpc_security_group_ids = [aws_security_group.instance.id]
 
-  user_data = base64encode(<<-EOF
-                #!/bin/bash
-                echo "Hello, world" > index.html
-                nohup busybox httpd -f -p ${var.server_port} &
-                EOF
-  )
+  user_data = templatefile("user_data.sh", {
+    server_port = var.server_port
+    # db_address  = data.terraform_remote_state.db.outputs.db_address
+    # db_port     = data.terraform_remote_state.db.outputs.db_port
+  })
 
   # この起動設定（aws_launch_template）をASGが参照していることで、これを変更したときに削除ができずにapplyに失敗することを解決するため
   # 新しいものを作成したあとに古いものを削除する設定
