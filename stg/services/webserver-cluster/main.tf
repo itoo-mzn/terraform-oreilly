@@ -148,11 +148,11 @@ resource "aws_launch_template" "example" {
   # ALB用セキュリティグループに所属させる
   vpc_security_group_ids = [aws_security_group.instance.id]
 
-  user_data = templatefile("user_data.sh", {
+  user_data = base64encode(templatefile("user_data.sh", {
     server_port = var.server_port
     # db_address  = data.terraform_remote_state.db.outputs.db_address
     # db_port     = data.terraform_remote_state.db.outputs.db_port
-  })
+  }))
 
   # この起動設定（aws_launch_template）をASGが参照していることで、これを変更したときに削除ができずにapplyに失敗することを解決するため
   # 新しいものを作成したあとに古いものを削除する設定
