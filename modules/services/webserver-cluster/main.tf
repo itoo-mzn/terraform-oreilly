@@ -1,14 +1,3 @@
-# backendはS3で管理
-terraform {
-  backend "s3" {
-    bucket = "state-bucket-ito-20260104"
-    key    = "stg/services/webserver-cluster/terraform.tfstate"
-    region = "ap-northeast-1"
-
-    use_lockfile = true
-  }
-}
-
 # data: すでに存在するリソースを参照
 data "aws_vpc" "default" {
   default = true
@@ -25,15 +14,15 @@ data "aws_subnets" "default" {
 # data "terraform_remote_state" "db" {
 #   backend = "s3"
 #   config = {
-#     bucket = "state-bucket-ito-20260104"
-#     key    = "data-stores/mysql/terraform.tfstate"
+#     bucket = var.db_remote_state_bucket
+#     key    = var.db_remote_state_key
 #     region = "ap-northeast-1"
 #   }
 # }
 
 # ALB
 resource "aws_lb" "example" {
-  name               = "terraform-asg-example"
+  name               = var.cluster_name
   load_balancer_type = "application"
   subnets            = data.aws_subnets.default.ids
   security_groups    = [aws_security_group.alb.id]
@@ -41,7 +30,7 @@ resource "aws_lb" "example" {
 
 # セキュリティグループ ALB用
 resource "aws_security_group" "alb" {
-  name = "terraform-example-alb"
+  name = "${var.cluster_name}-alb"
 
   ingress {
     from_port   = 80
@@ -94,7 +83,7 @@ resource "aws_lb_listener_rule" "asg" {
 
 # ALBターゲットグループ（ALBからトラフィックを受け、EC2インスタンスに振り分ける）
 resource "aws_lb_target_group" "asg" {
-  name     = "terraform-asg-example"
+  name     = var.cluster_name
   port     = var.server_port
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.default.id
@@ -131,20 +120,20 @@ resource "aws_autoscaling_group" "example" {
 
   tag {
     key                 = "Name"
-    value               = "terraform-asg-example"
+    value               = var.cluster_name
     propagate_at_launch = true # インスタンス起動時にタグを付与
   }
 }
 
 # ALBで起動するインスタンスの設定
 resource "aws_launch_template" "example" {
-  name_prefix   = "terraform-example-"
+  name_prefix   = "${var.cluster_name}-"
   image_id      = "ami-0f415cc2783de6675"
   instance_type = "t2.micro"
   # ALB用セキュリティグループに所属させる
   vpc_security_group_ids = [aws_security_group.instance.id]
 
-  user_data = base64encode(templatefile("user_data.sh", {
+  user_data = base64encode(templatefile("${path.module}/user_data.sh", {
     server_port = var.server_port
     # db_address  = data.terraform_remote_state.db.outputs.db_address
     # db_port     = data.terraform_remote_state.db.outputs.db_port
@@ -159,7 +148,7 @@ resource "aws_launch_template" "example" {
 
 # セキュリティグループ インスタンス用
 resource "aws_security_group" "instance" {
-  name = "terraform-example-instance"
+  name = "${var.cluster_name}-instance"
 
   ingress {
     from_port   = var.server_port
