@@ -16,7 +16,12 @@ provider "aws" {
 module "webserver-cluster" {
   source = "../../../modules/services/webserver-cluster"
 
-  cluster_name           = "stg-webserver-cluster"
+  cluster_name = "stg-webserver-cluster"
+
   db_remote_state_bucket = "state-bucket-ito-20260104"
   db_remote_state_key    = "stg/services/webserver-cluster/terraform.tfstate"
+
+  instance_type = "t2.micro"
+  min_size      = 2
+  max_size      = 10
 }

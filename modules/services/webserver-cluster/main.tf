@@ -115,8 +115,8 @@ resource "aws_autoscaling_group" "example" {
   # ヘルスチェックにターゲットグループのヘルスチェック結果を利用
   health_check_type = "ELB"
 
-  min_size = 2
-  max_size = 10
+  min_size = var.min_size
+  max_size = var.max_size
 
   tag {
     key                 = "Name"
@@ -129,7 +129,7 @@ resource "aws_autoscaling_group" "example" {
 resource "aws_launch_template" "example" {
   name_prefix   = "${var.cluster_name}-"
   image_id      = "ami-0f415cc2783de6675"
-  instance_type = "t2.micro"
+  instance_type = var.instance_type
   # ALB用セキュリティグループに所属させる
   vpc_security_group_ids = [aws_security_group.instance.id]
 
