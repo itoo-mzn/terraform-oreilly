@@ -25,3 +25,26 @@ module "webserver-cluster" {
   min_size      = 2
   max_size      = 10
 }
+
+# 指定時間にサーバー台数を増減するスケジュール設定
+resource "awa_autoscaling_schedule" "scale_out_during_business_hours" {
+  autoscaling_group_name = module.webserver-cluster.asg_name
+
+  scheduled_action_name = "scale_out_during_business_hours"
+  min_size              = 2
+  max_size              = 10
+  # 希望する容量
+  desired_capacity = 10
+  # 毎日9時にスケールアウト（UTCなので実際のビジネス稼働時間とは異なるが面倒なので書籍のまま）
+  start_time = "0 9 * * *"
+}
+
+resource "awa_autoscaling_schedule" "scale_in_at_night" {
+  autoscaling_group_name = module.webserver-cluster.asg_name
+
+  scheduled_action_name = "scale_in_at_night"
+  min_size              = 2
+  max_size              = 10
+  desired_capacity      = 2
+  start_time            = "0 18 * * *"
+}
