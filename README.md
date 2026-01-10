@@ -24,6 +24,19 @@ https://github.com/direnv/direnv?tab=readme-ov-file#basic-installation
 
 https://qiita.com/lilacs/items/fe8b3223f2a193c0fa2e
 
+# ファイルレイアウト
+- live : 実際に環境へ反映しているもののみを格納
+  - stg : ステージング環境
+    - data-sources : データストア
+    - serivices : アプリケーションやマイクロサービス
+  - prd : 本番環境
+
+- modules : モジュール
+  - services
+
+- global : 全環境横断で利用するもの
+  - s3
+
 # ステート管理
 
 `global/s3`内で作成したS3バケットで管理。
