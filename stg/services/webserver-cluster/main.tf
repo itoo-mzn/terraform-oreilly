@@ -48,4 +48,14 @@ resource "aws_autoscaling_schedule" "scale_in_at_night" {
   desired_capacity      = 2
   recurrence            = "0 18 * * *"
 }
+
+# stg環境のみ、ALBのセキュリティグループに対してテスト用のポート12345番へのアクセスを許可
+resource "aws_security_group_rule" "allow_testing_inbound" {
+  type              = "ingress"
+  security_group_id = module.webserver-cluster.alb_security_group_id
+
+  from_port   = 12345
+  to_port     = 12345
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
 }

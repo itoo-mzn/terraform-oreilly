@@ -4,6 +4,11 @@ output "alb_dns_name" {
 }
 
 output "asg_name" {
-  value       = aws_autoscaling_group.webserver_asg.name
+  value       = aws_autoscaling_group.example.name
   description = "webサーバーのオートスケーリンググループ名"
+}
+
+output "alb_security_group_id" {
+  value       = aws_security_group.alb.id
+  description = "ALBのセキュリティグループID"
 }
