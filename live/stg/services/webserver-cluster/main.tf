@@ -21,9 +21,10 @@ module "webserver-cluster" {
   db_remote_state_bucket = "state-bucket-ito-20260104"
   db_remote_state_key    = "stg/services/webserver-cluster/terraform.tfstate"
 
-  instance_type = "t2.micro"
-  min_size      = 2
-  max_size      = 10
+  instance_type      = "t2.micro"
+  min_size           = 2
+  max_size           = 10
+  enable_autoscaling = false
 
   custom_tags = {
     # このタグを設定しているリソースはどのチームが管理を担当しているのか
@@ -31,29 +32,6 @@ module "webserver-cluster" {
     # このリソースがTerraformで構築されたことを示す（手動変更を避けるため）
     DeployedBy = "terraform"
   }
-}
-
-# 指定時間にサーバー台数を増減するスケジュール設定
-resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
-  autoscaling_group_name = module.webserver-cluster.asg_name
-
-  scheduled_action_name = "scale_out_during_business_hours"
-  min_size              = 2
-  max_size              = 10
-  # 希望する容量
-  desired_capacity = 10
-  # 毎日9時にスケールアウト（UTCなので実際のビジネス稼働時間とは異なるが面倒なので書籍のまま）
-  recurrence = "0 9 * * *"
-}
-
-resource "aws_autoscaling_schedule" "scale_in_at_night" {
-  autoscaling_group_name = module.webserver-cluster.asg_name
-
-  scheduled_action_name = "scale_in_at_night"
-  min_size              = 2
-  max_size              = 10
-  desired_capacity      = 2
-  recurrence            = "0 18 * * *"
 }
 
 # stg環境のみ、ALBのセキュリティグループに対してテスト用のポート12345番へのアクセスを許可

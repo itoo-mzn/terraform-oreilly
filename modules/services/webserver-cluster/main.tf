@@ -198,3 +198,30 @@ resource "aws_security_group_rule" "allow_server_http_outbound" {
   protocol    = local.any_protocol
   cidr_blocks = local.all_ips
 }
+
+# 指定時間にサーバー台数を増減するスケジュール設定
+resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
+  count = var.enable_autoscaling ? 1 : 0
+
+  autoscaling_group_name = module.webserver-cluster.asg_name
+
+  scheduled_action_name = "scale_out_during_business_hours"
+  min_size              = 2
+  max_size              = 10
+  # 希望する容量
+  desired_capacity = 10
+  # 毎日9時にスケールアウト（UTCなので実際のビジネス稼働時間とは異なるが面倒なので書籍のまま）
+  recurrence = "0 9 * * *"
+}
+
+resource "aws_autoscaling_schedule" "scale_in_at_night" {
+  count = var.enable_autoscaling ? 1 : 0
+
+  autoscaling_group_name = module.webserver-cluster.asg_name
+
+  scheduled_action_name = "scale_in_at_night"
+  min_size              = 2
+  max_size              = 10
+  desired_capacity      = 2
+  recurrence            = "0 18 * * *"
+}
