@@ -33,3 +33,9 @@ variable "max_size" {
   description = "オートスケーリンググループの最大インスタンス数"
   type        = number
 }
+
+variable "custom_tags" {
+  description = "インスタンス用オートスケーリンググループへのタグ"
+  type        = map(string)
+  default     = {}
+}

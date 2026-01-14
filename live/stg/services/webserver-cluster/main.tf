@@ -24,6 +24,13 @@ module "webserver-cluster" {
   instance_type = "t2.micro"
   min_size      = 2
   max_size      = 10
+
+  custom_tags = {
+    # このタグを設定しているリソースはどのチームが管理を担当しているのか
+    Owner = "team-foo"
+    # このリソースがTerraformで構築されたことを示す（手動変更を避けるため）
+    DeployedBy = "terraform"
+  }
 }
 
 # 指定時間にサーバー台数を増減するスケジュール設定
