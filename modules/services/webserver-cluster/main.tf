@@ -203,7 +203,7 @@ resource "aws_security_group_rule" "allow_server_http_outbound" {
 resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
   count = var.enable_autoscaling ? 1 : 0
 
-  autoscaling_group_name = module.webserver-cluster.asg_name
+  autoscaling_group_name = aws_autoscaling_group.example.name
 
   scheduled_action_name = "scale_out_during_business_hours"
   min_size              = 2
@@ -217,7 +217,7 @@ resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
 resource "aws_autoscaling_schedule" "scale_in_at_night" {
   count = var.enable_autoscaling ? 1 : 0
 
-  autoscaling_group_name = module.webserver-cluster.asg_name
+  autoscaling_group_name = aws_autoscaling_group.example.name
 
   scheduled_action_name = "scale_in_at_night"
   min_size              = 2
