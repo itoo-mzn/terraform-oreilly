@@ -121,7 +121,7 @@ resource "aws_lb_target_group" "asg" {
 resource "aws_autoscaling_group" "example" {
   # 起動設定(Launch Template)のidに明示的に依存させることで、
   # 起動設定が書き換えられたらASGも置き換えるようにする
-  name = "${var.cluster_name}-${aws_launch_template.example.id}"
+  name = var.cluster_name
 
   vpc_zone_identifier = data.aws_subnets.default.ids
 
@@ -139,14 +139,13 @@ resource "aws_autoscaling_group" "example" {
   min_size = var.min_size
   max_size = var.max_size
 
-  # 置き換え先を作成してから古いASGが削除される
-  lifecycle {
-    create_before_destroy = true
+  # AWSネイティブなゼロダウンタイムデプロイ
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+    }
   }
-
-  # ASGを置き換える前に、最低でもこの数のインスタンスが
-  # ヘルスチェックをパスすることを確認してから古いASGが削除される
-  min_elb_capacity = var.min_size
 
   tag {
     key                 = "Name"
