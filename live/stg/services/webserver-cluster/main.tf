@@ -18,6 +18,9 @@ module "webserver-cluster" {
 
   cluster_name = "stg-webserver-cluster"
 
+  ami                = "ami-0f415cc2783de6675"
+  server_return_text = "New server text"
+
   db_remote_state_bucket = "state-bucket-ito-20260104"
   db_remote_state_key    = "stg/services/webserver-cluster/terraform.tfstate"
 

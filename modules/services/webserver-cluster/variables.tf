@@ -45,3 +45,15 @@ variable "enable_autoscaling" {
   type        = bool
   default     = false
 }
+
+variable "ami" {
+  description = "AMI"
+  type        = string
+  default     = "ami-0f415cc2783de6675"
+}
+
+variable "server_return_text" {
+  description = "Webサーバーが返すテキスト"
+  type        = string
+  default     = "Hello, World!"
+}

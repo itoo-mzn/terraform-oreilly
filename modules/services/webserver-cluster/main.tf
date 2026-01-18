@@ -119,6 +119,10 @@ resource "aws_lb_target_group" "asg" {
 
 # オートスケーリンググループ（EC2インスタンスの自動スケーリング設定）
 resource "aws_autoscaling_group" "example" {
+  # 起動設定(Launch Template)のidに明示的に依存させることで、
+  # 起動設定が書き換えられたらASGも置き換えるようにする
+  name = "${var.cluster_name}-${aws_launch_template.example.id}"
+
   vpc_zone_identifier = data.aws_subnets.default.ids
 
   launch_template {
@@ -134,6 +138,15 @@ resource "aws_autoscaling_group" "example" {
 
   min_size = var.min_size
   max_size = var.max_size
+
+  # 置き換え先を作成してから古いASGが削除される
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  # ASGを置き換える前に、最低でもこの数のインスタンスが
+  # ヘルスチェックをパスすることを確認してから古いASGが削除される
+  min_elb_capacity = var.min_size
 
   tag {
     key                 = "Name"
@@ -156,13 +169,14 @@ resource "aws_autoscaling_group" "example" {
 # ALBで起動するインスタンスの設定
 resource "aws_launch_template" "example" {
   name_prefix   = "${var.cluster_name}-"
-  image_id      = "ami-0f415cc2783de6675"
+  image_id      = var.ami
   instance_type = var.instance_type
   # ALB用セキュリティグループに所属させる
   vpc_security_group_ids = [aws_security_group.instance.id]
 
   user_data = base64encode(templatefile("${path.module}/user_data.sh", {
-    server_port = var.server_port
+    server_return_text = var.server_return_text
+    server_port        = var.server_port
     # db_address  = data.terraform_remote_state.db.outputs.db_address
     # db_port     = data.terraform_remote_state.db.outputs.db_port
   }))
