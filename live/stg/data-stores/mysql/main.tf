@@ -34,6 +34,7 @@
 #   skip_final_snapshot = true
 #   db_name             = "example_database"
 
+#   # TODO: 6章（6.3）に書いているAWS SecretsManagerに保存する
 #   username = var.db_username
 #   password = var.db_password
 # }
